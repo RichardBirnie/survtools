@@ -1,0 +1,16 @@
+Package: survtools
+Type: Package
+Title: A collection of useful functions for survival analysis
+Version: 0.0.1
+Authors@R: person("Richard", "Birnie", email = "richard.birnie@googlemail.com",
+                  role = c("aut", "cre"))
+Description: A collection of useful functions for survival analysis
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    ggplot2 (>= 2.2.1),
+    survminer (>= 0.2.4),
+    survival (>= 2.40-1),
+    flexsurv (>= 1.0.0)
+RoxygenNote: 5.0.1
