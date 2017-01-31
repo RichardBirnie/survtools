@@ -8,6 +8,7 @@ Description: A collection of useful functions for survival analysis
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+URL: https://github.com/RichardBirnie/survtools
 Imports:
     ggplot2 (>= 2.2.1),
     survminer (>= 0.2.4),
