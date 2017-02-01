@@ -5,19 +5,20 @@
 \title{Plot Kaplan-Meier curves with a corresponding table of numbers at risk and
 overlay parametric survival curves if required}
 \usage{
-ggsurvplot2(km, cen = FALSE, psm.curves, xval, yval, groups,
-  plot.title = "", time.interval = 1, show.table = TRUE,
-  table.height = 0.2, table.title = "Number at risk", title.legend = "",
-  labs.legend, l.type, x.limit, x.label = "Time (Years)", cols = "hue", ...)
+ggsurvplot2(km, psm.curves, cen = FALSE, xval, yval, groups,
+  plot.title = "", time.interval = 1, time.scale = "linear",
+  show.table = TRUE, table.height = 0.2, table.title = "Number at risk",
+  title.legend = "", labs.legend, l.type, x.limit, x.label = "Time (Years)",
+  cols = "hue", ...)
 }
 \arguments{
 \item{km}{A survfit object containing the Kaplan-Meier estimate of the
 survival function as returned by \code{\link[survival]{survfit}}}
 
-\item{cen}{logical TRUE/FALSE. Should censoring points be shown on the curve. Default = FALSE}
-
 \item{psm.curves}{List. Each element of the list is a data frame containing
 results from a parametric survival model. See example below}
+
+\item{cen}{logical TRUE/FALSE. Should censoring points be shown on the curve. Default = FALSE}
 
 \item{xval}{column name that contains x values (time)}
 
@@ -29,6 +30,9 @@ results from a parametric survival model. See example below}
 
 \item{time.interval}{Integer. A numbe specifying the preferred time intervals
 on the x-axis. Default = 1 year}
+
+\item{time.scale}{Character. This defines the scale of the time axis. Default
+= 'linear'. The alternative is 'log' to plot on a log time scale}
 
 \item{show.table}{Logical TRUE/FALSE. If the table of numbers at risk is
 required set this to TRUE, if not set this to FALSE. Default = TRUE}
@@ -50,6 +54,10 @@ x-axis.}
 Time (Years)}
 
 \item{...}{Additional arguments to be passed to \code{\link[survminer]{ggsurvplot}}}
+
+\item{fun}{This is passed directly to the fun argument of
+\code{\link[survminer]{ggsurvplot}}. The default is to plot the survival
+curve. Set this to 'cumhaz' if you want the cumulative hazard function.}
 
 \item{linetype}{A vector of linetypes for each curve in the plot}
 }
