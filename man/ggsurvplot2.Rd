@@ -146,6 +146,43 @@ surv.fig <- ggsurvplot2(km = surv.km, psm.curves = psm, xval = 'time', yval = 'e
                         cols = c(rep(BM.red, length(psm)+1), rep(BM.blue, length(psm)+1), rep(BM.Dblue, length(psm)+1))
                        )
 surv.fig
+
+# Example cumulative hazard plot ------------------------------------------
+#Get cumulative hazards for the weibull model
+chaz.wb.summ <- summary(surv.wb, type = 'cumhaz')
+
+#rearrange the Weibull results into a format suitable for ggplot
+names(chaz.wb.summ) <- gsub('group=', '', names(chaz.wb.summ))
+n.temp <- names(chaz.wb.summ)
+wb.chaz <- lapply(names(chaz.wb.summ), function(name) {
+  chaz.wb.summ[[name]]$prognosis <- paste(name, 'Weibull')
+  chaz.wb.summ[[name]]
+})
+names(wb.chaz) <- n.temp
+wb.chaz <- bind_rows(wb.chaz)
+
+#Get cumulative hazards for the weibull model
+chaz.exp.summ <- summary(surv.exp, type = 'cumhaz')
+
+#rearrange the exponential results into a format suitable for ggplot
+names(chaz.exp.summ) <- gsub('group=', '', names(chaz.exp.summ))
+n.temp <- names(chaz.exp.summ)
+exp.chaz <- lapply(names(chaz.exp.summ), function(name) {
+  chaz.exp.summ[[name]]$prognosis <- paste(name, 'Exponential')
+  chaz.exp.summ[[name]]
+})
+names(exp.chaz) <- n.temp
+exp.chaz <- bind_rows(exp.chaz)
+
+psm.chaz <- list('Weibull' = wb.chaz, 'Exponential' = exp.chaz)
+
+#calculate minimum time for x-axis
+chaz.fig <- ggsurvplot2(surv.km, psm.curves = psm.chaz, fun = 'cumhaz', xval = 'time', yval = 'est', groups = 'prognosis',
+                        plot.title = 'Cumulative Hazard', time.scale = 'log', time.interval = 1, show.table = TRUE, table.height = 0.2,
+                        table.title = 'Number at risk', title.legend = 'Prognosis', labs.legend =  c('Good KM', 'Medium KM', 'Poor KM'),
+                        l.type = rep(c(2, 1, 3), length(psm.chaz)+1), x.limit = c(0.1, 7.5), x.label = 'Log Time (Years)',
+                        cols = c(rep(BM.red, length(psm.chaz)+1), rep(BM.blue, length(psm.chaz)+1), rep(BM.Dblue, length(psm.chaz)+1)))
+chaz.fig
 }
 \seealso{
 \code{\link[survminer]{ggsurvplot}}
