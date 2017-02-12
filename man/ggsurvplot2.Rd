@@ -5,11 +5,11 @@
 \title{Plot Kaplan-Meier curves with a corresponding table of numbers at risk and
 overlay parametric survival curves if required}
 \usage{
-ggsurvplot2(km, psm.curves, cen = FALSE, xval, yval, groups,
+ggsurvplot2(km, psm.curves = NULL, cen = FALSE, xval, yval, groups,
   plot.title = "", time.interval = 1, time.scale = "linear",
   show.table = TRUE, table.height = 0.2, table.title = "Number at risk",
-  title.legend = "", labs.legend, l.type, x.limit, x.label = "Time (Years)",
-  cols = "hue", ...)
+  title.legend = "", labs.legend, l.type = 1, x.limit,
+  x.label = "Time (Years)", cols = "hue", ...)
 }
 \arguments{
 \item{km}{A survfit object containing the Kaplan-Meier estimate of the
@@ -99,9 +99,21 @@ data(bc)
 #create a survival object
 surv.obj <- Surv(recyrs, censrec) ~ group
 
+
+# Basic Kaplan-Meier curves -----------------------------------------------
 #simple Kaplan-Meier estimate
 surv.km <- survfit(surv.obj, data = bc)
 
+#Plot basic Kaplan-Meier curves without any parametric curves
+km.fig <- ggsurvplot2(km = surv.km, xval = 'time', yval = 'est',
+                      groups = 'prognosis', plot.title = 'Breast Cancer Prognosis',
+                      x.limit = c(0, 7.5), title.legend = 'Prognosis',
+                      labs.legend =  c('Good KM', 'Medium KM', 'Poor KM'),
+                      cols = c(BM.red, BM.blue, BM.pink)
+)
+
+
+# Fit parametric survival models -------------------------------------------
 #fit a Weibull model and get the fitted survival curve
 surv.wb <- flexsurvreg(surv.obj, data = bc, dist = 'weibull')
 surv.wb.summ <- summary(surv.wb, type = 'survival')
@@ -130,6 +142,8 @@ exp.surv <- lapply(names(surv.exp.summ), function(name) {
 names(exp.surv) <- n.temp
 exp.surv <- bind_rows(exp.surv)
 
+
+# Overlay parametric curves on Kaplan-Meier -------------------------------
 #put all the parametric survival results in a list
 #Each element of the list a data frame with the results of the corresponding model
 psm = list('Weibull' = wb.surv, 'Exponential' = exp.surv)
@@ -147,6 +161,8 @@ surv.fig <- ggsurvplot2(km = surv.km, psm.curves = psm, xval = 'time', yval = 'e
                        )
 surv.fig
 
+
+# Cumulative Hazard plots -------------------------------------------------
 # Example cumulative hazard plot ------------------------------------------
 #Get cumulative hazards for the weibull model
 chaz.wb.summ <- summary(surv.wb, type = 'cumhaz')

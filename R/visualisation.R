@@ -47,9 +47,9 @@
 #' @seealso \code{\link[survminer]{ggsurvplot}}
 #'
 #' @export
-ggsurvplot2 <- function(km, psm.curves, cen = FALSE, xval, yval, groups, plot.title = '', time.interval = 1,
+ggsurvplot2 <- function(km, psm.curves = NULL, cen = FALSE, xval, yval, groups, plot.title = '', time.interval = 1,
                         time.scale = 'linear', show.table = TRUE, table.height = 0.2, table.title = 'Number at risk',
-                        title.legend = '', labs.legend, l.type, x.limit, x.label = 'Time (Years)',
+                        title.legend = '', labs.legend, l.type = 1, x.limit, x.label = 'Time (Years)',
                         cols = 'hue', ...) {
   fig <- survminer::ggsurvplot(km, break.time.by = time.interval,
                                palette = cols, xlab = x.label, risk.table = show.table, risk.table.y.text.col = FALSE,
@@ -57,14 +57,16 @@ ggsurvplot2 <- function(km, psm.curves, cen = FALSE, xval, yval, groups, plot.ti
                                legend.labs = labs.legend, censor = cen, linetype = l.type, xlim = x.limit, ...
                                )
 
+  if(!is.null(psm.curves)){
   #extract the plot component for modification
   #add the parametric curves and put the plot component back into the figure
-  for(i in 1:length(psm.curves)){
-  fig$plot <- fig$plot + ggplot2::geom_line(data = psm.curves[[i]],
-                                   aes_string(x = xval, y = yval, colour = groups, linetype = groups)) +
-    ggplot2::scale_colour_manual(values = cols) +
-    ggplot2::labs(title = plot.title) +
-    ggplot2::theme(plot.title = element_text(hjust = 0.5))
+    for(i in 1:length(psm.curves)){
+      fig$plot <- fig$plot + ggplot2::geom_line(data = psm.curves[[i]],
+                                                aes_string(x = xval, y = yval, colour = groups, linetype = groups)) +
+        ggplot2::scale_colour_manual(values = cols) +
+        ggplot2::labs(title = plot.title) +
+        ggplot2::theme(plot.title = element_text(hjust = 0.5))
+    }
   }
 
   if(time.scale == 'log'){
