@@ -70,15 +70,13 @@ ggsurvplot2 <- function(km, psm.curves = NULL, cen = FALSE, xval, yval, groups, 
   }
 
   if(time.scale == 'log'){
-    low.time <- round(x.limit[1], 1)
-    hi.time <- round(x.limit[2], 1)
     fig$plot <- fig$plot + scale_x_continuous(trans = 'log')
   }
 
   #tidy up the table a bit and insert it back into the figure
-  fig$table <- fig$table + ggplot2::theme(axis.line = element_blank(), axis.ticks = element_blank(),
-                                          axis.text.x = element_blank(), axis.title = element_blank(),
-                                          plot.title = element_text(size = 12)
+  fig$table <- fig$table + ggplot2::theme(axis.line = ggplot2::element_blank(), axis.ticks = ggplot2::element_blank(),
+                                          axis.text.x = ggplot2::element_blank(), axis.title = ggplot2::element_blank(),
+                                          plot.title = ggplot2::element_text(size = 12)
                                           )
   fig
 }

@@ -99,7 +99,6 @@ data(bc)
 #create a survival object
 surv.obj <- Surv(recyrs, censrec) ~ group
 
-
 # Basic Kaplan-Meier curves -----------------------------------------------
 #simple Kaplan-Meier estimate
 surv.km <- survfit(surv.obj, data = bc)
@@ -112,41 +111,23 @@ km.fig <- ggsurvplot2(km = surv.km, xval = 'time', yval = 'est',
                       cols = c(BM.red, BM.blue, BM.pink)
 )
 
-
 # Fit parametric survival models -------------------------------------------
 #fit a Weibull model and get the fitted survival curve
+#in a format suitable for plotting with ggplot
 surv.wb <- flexsurvreg(surv.obj, data = bc, dist = 'weibull')
-surv.wb.summ <- summary(surv.wb, type = 'survival')
-
-#rearrange the Weibull survival results into a format suitable for ggplot
-names(surv.wb.summ) <- gsub('group=', '', names(surv.wb.summ))
-n.temp <- names(surv.wb.summ)
-wb.surv <- lapply(names(surv.wb.summ), function(name) {
-  surv.wb.summ[[name]]$prognosis <- paste(name, 'Weibull')
-  surv.wb.summ[[name]]
-})
-names(wb.surv) <- n.temp
-wb.surv <- bind_rows(wb.surv)
+surv.wb.summ <- summary(surv.wb, type = 'survival', tidy = TRUE)
+surv.wb.summ$prognosis <- paste(surv.wb.summ$group, 'Weibull')
 
 #fit an exponential model and get the fitted survival curve
+#in a format suitable for plotting with ggplot
 surv.exp <- flexsurvreg(surv.obj, data = bc, dist = 'exp')
-surv.exp.summ <- summary(surv.exp, type = 'survival')
-
-#rearrange the exponential survival results into a format suitable for ggplot
-names(surv.exp.summ) <- gsub('group=', '', names(surv.exp.summ))
-n.temp <- names(surv.exp.summ)
-exp.surv <- lapply(names(surv.exp.summ), function(name) {
-  surv.exp.summ[[name]]$prognosis <- paste(name, 'Exponential')
-  surv.exp.summ[[name]]
-})
-names(exp.surv) <- n.temp
-exp.surv <- bind_rows(exp.surv)
-
+surv.exp.summ <- summary(surv.exp, type = 'survival', tidy = TRUE)
+surv.exp.summ$prognosis <- paste(surv.exp.summ$group, 'Exponential')
 
 # Overlay parametric curves on Kaplan-Meier -------------------------------
 #put all the parametric survival results in a list
 #Each element of the list a data frame with the results of the corresponding model
-psm = list('Weibull' = wb.surv, 'Exponential' = exp.surv)
+psm = list('Weibull' = surv.wb.summ, 'Exponential' = surv.exp.summ)
 
 #plot the results
 #The base layer of the plot is the Kaplan Meier curve. The parametric curves are
