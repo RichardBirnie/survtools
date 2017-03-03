@@ -4,7 +4,7 @@
 \alias{getKMcurve}
 \title{Extract data describing the Kaplan-Meier curve from a \code{\link[survival]{survfit}} object}
 \usage{
-getKMcurve(km, time.col, event.col, data)
+getKMcurve(km, time.col, event.col, group.col, data)
 }
 \arguments{
 \item{km}{A survfit object containing the Kaplan-Meier estimate of the

@@ -16,7 +16,7 @@
 #' @example inst/examples/getKMcurve_example.R
 #'
 #' @export
-getKMcurve <- function(km, time.col, event.col, data){
+getKMcurve <- function(km, time.col, event.col, group.col, data){
   #get summary of KM object
   KMSum <- summary(km)
 
@@ -32,7 +32,8 @@ getKMcurve <- function(km, time.col, event.col, data){
 
     km.curve <- lapply(unique(KMSum$strata), function(group){
       km.group <- dplyr::filter(KMSum, strata == group)
-      data.group <- dplyr::filter(data, group == group)
+      fil <- lazyeval::interp(~y == x, .values=list(y = as.name(group.col), x = group))
+      data.group <- filter_(data, fil)
       km.curve.g <- .extractKM(KMSum = km.group, time.col = time.col, event.col = event.col, data = data.group)
       km.curve.g$group <- group
       km.curve.g
