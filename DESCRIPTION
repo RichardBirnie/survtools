@@ -15,4 +15,4 @@ Imports:
     flexsurv (>= 1.0.0),
     survminer (>= 0.2.4),
     survival (>= 2.40-1)
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

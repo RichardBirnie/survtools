@@ -15,6 +15,8 @@ A data frame with columns:
   \describe{
     \item{Time}{The time of the events}
     \item{Survival}{The probability of survival at each event time}
+    \item{lower}{The lower limit of the confidence interval for the survival curve}
+    \item{upper}{The upper limit of the confidence interval for the survival curve}
     \item{Nrisk}{The number of patients at risk at each event time}
     \item{group}{(Optional) The group that each observation belongs to if
     there are multiple patient groups. This will be absent if there is only
@@ -54,4 +56,3 @@ plot(km.curve$Time[km.curve$group == 'Good'], km.curve$Survival [km.curve$group 
 lines(km.curve$Time[km.curve$group == 'Medium'], km.curve$Survival [km.curve$group == 'Medium'], col='green')
 lines(km.curve$Time[km.curve$group == 'Poor'], km.curve$Survival [km.curve$group == 'Poor'], col='blue')
 }
-

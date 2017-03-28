@@ -184,4 +184,3 @@ chaz.fig
 \seealso{
 \code{\link[survminer]{ggsurvplot}}
 }
-
