@@ -48,7 +48,8 @@ surv.obj <- Surv(recyrs, censrec) ~ group
 surv.km <- survfit(surv.obj, data = bc)
 
 #Get the Kaplan-Meier data
-km.curve <- getKMcurve(km = surv.km, time.col = 'recyrs', event.col = 'censrec', data = bc)
+#.col variables should correspond to column names in the data set
+km.curve <- getKMcurve(km = surv.km, time.col = 'recyrs', event.col = 'censrec', group.col = 'group', data = bc)
 
 #plot KM
 plot(km.curve$Time[km.curve$group == 'Good'], km.curve$Survival [km.curve$group == 'Good'], type="l", ylim=c(0,1),

@@ -49,7 +49,7 @@ getKMcurve <- function(km, time.col, event.col, group.col, data){
 #' Internal helper function to extract Kaplan-Meier data from a single group of patients
 .extractKM <- function(KMSum, time.col, event.col, data){
   #extract survival estimates immediately  after event occurs (bottom right corner of km). Data also contains survival at time 0
-  KMdataA <- data.frame("Time" = c(0, min(data[data[event.col] == 1, time.col]), KMSum$time, max(data[,time.col])),
+  KMdataA <- data.frame("Time" = c(0, min(data[data[event.col] == 1, time.col],na.rm = TRUE), KMSum$time, max(data[,time.col], na.rm = TRUE)),
                         "Survival" = c(1, 1, KMSum$surv, min(KMSum$surv)),
                         "lower" = c(1, 1, KMSum$lower, min(KMSum$lower)),
                         "upper" = c(1, 1, KMSum$upper, min(KMSum$upper))
@@ -71,7 +71,7 @@ getKMcurve <- function(km, time.col, event.col, group.col, data){
   KMdataAB2 <- KMdataAB[order(KMdataAB$Time, -KMdataAB$Survival), ]
 
   #calculate number of right censored patients
-  NRcens <-  dim(data[(data[,time.col] == max(data[,time.col]) & data[,event.col] == 0), ])[1]
+  NRcens <-  dim(data[(data[,time.col] == max(data[,time.col], na.rm = TRUE) & data[,event.col] == 0), ])[1]
   #calculate and order number of patients at risk
   Nrisk <- sort(c(length(data[,time.col]), KMSum$n.risk, KMSum$n.risk - KMSum$n.event, NRcens), decreasing = TRUE)
   KMdata <- cbind(KMdataAB2, Nrisk)
