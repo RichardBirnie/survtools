@@ -5,61 +5,26 @@
 \title{Plot Kaplan-Meier curves with a corresponding table of numbers at risk and
 overlay parametric survival curves if required}
 \usage{
-ggsurvplot2(km, psm.curves = NULL, cen = FALSE, xval, yval, groups,
-  plot.title = "", time.interval = 1, time.scale = "linear",
-  show.table = TRUE, table.height = 0.2, table.title = "Number at risk",
-  title.legend = "", labs.legend, l.type = 1, x.limit,
-  x.label = "Time (Years)", cols = "hue", ...)
+ggsurvplot2(fit, psm.curves = NULL, xval = "time", yval = "est",
+  groups = "group", ...)
 }
 \arguments{
-\item{km}{A survfit object containing the Kaplan-Meier estimate of the
+\item{fit}{A survfit object containing the Kaplan-Meier estimate of the
 survival function as returned by \code{\link[survival]{survfit}}}
 
 \item{psm.curves}{List. Each element of the list is a data frame containing
-results from a parametric survival model. See example below}
-
-\item{cen}{logical TRUE/FALSE. Should censoring points be shown on the curve. Default = FALSE}
+survival estimates from a parametric survival model as returned by
+summary.flexsurv. The list must be named. Names should be the distribution
+used for the survival analysis, e.g. weibull. See example below}
 
 \item{xval}{column name that contains x values (time)}
 
 \item{yval}{column name that contains y values (survival probability)}
 
-\item{groups}{column name that contains groups in your data.}
+\item{groups}{column name that contains groups in your data. e.g. treatment arm.}
 
-\item{plot.title}{Character. Text to be used as the main plot title}
-
-\item{time.interval}{Integer. A numbe specifying the preferred time intervals
-on the x-axis. Default = 1 year}
-
-\item{time.scale}{Character. This defines the scale of the time axis. Default
-= 'linear'. The alternative is 'log' to plot on a log time scale}
-
-\item{show.table}{Logical TRUE/FALSE. If the table of numbers at risk is
-required set this to TRUE, if not set this to FALSE. Default = TRUE}
-
-\item{table.height}{Numeric. This controls the height of the number at risk table}
-
-\item{table.title}{Character. Text to be used as the table title}
-
-\item{title.legend}{Character Text to be used as the legend title. This is blank by default}
-
-\item{labs.legend}{Character vector to be used as labels for each item in the
-legend. The length of the vector shoud match the numbe of groups in your
-data}
-
-\item{x.limit}{A numeric vector of length 2 that specifies the range of the
-x-axis.}
-
-\item{x.label}{Character. Text to be used as the label on the x-axis. Default =
-Time (Years)}
-
-\item{...}{Additional arguments to be passed to \code{\link[survminer]{ggsurvplot}}}
-
-\item{fun}{This is passed directly to the fun argument of
-\code{\link[survminer]{ggsurvplot}}. The default is to plot the survival
-curve. Set this to 'cumhaz' if you want the cumulative hazard function.}
-
-\item{linetype}{A vector of linetypes for each curve in the plot}
+\item{...}{Additional arguments to be passed to
+\code{\link[survminer]{ggsurvplot}}}
 }
 \value{
 An object of class "ggsurvplot" "list". This is essentially a list
