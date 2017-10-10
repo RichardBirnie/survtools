@@ -15,6 +15,7 @@ A data frame with columns:
   \describe{
     \item{Time}{The time of the events}
     \item{Survival}{The probability of survival at each event time}
+    \item{stderr}{The standard error of the survival estimate}
     \item{lower}{The lower limit of the confidence interval for the survival curve}
     \item{upper}{The upper limit of the confidence interval for the survival curve}
     \item{Nrisk}{The number of patients at risk at each event time}

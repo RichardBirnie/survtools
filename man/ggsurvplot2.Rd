@@ -61,90 +61,106 @@ BM.Dyellow = rgb(214, 200, 16, max=255)
 #group = prognostic group
 data(bc)
 
-#create a survival object
-surv.obj <- Surv(recyrs, censrec) ~ group
-
 # Basic Kaplan-Meier curves -----------------------------------------------
 #simple Kaplan-Meier estimate
-surv.km <- survfit(surv.obj, data = bc)
+surv.km <- survfit(Surv(recyrs, censrec) ~ group, data = bc)
+
+#edit the strata labels. These are used in the plot legend
+names(surv.km$strata) <- gsub('group=', '', names(surv.km$strata))
 
 #Plot basic Kaplan-Meier curves without any parametric curves
-km.fig <- ggsurvplot2(km = surv.km, xval = 'time', yval = 'est',
-                      groups = 'prognosis', plot.title = 'Breast Cancer Prognosis',
-                      x.limit = c(0, 7.5), title.legend = 'Prognosis',
-                      labs.legend =  c('Good KM', 'Medium KM', 'Poor KM'),
-                      cols = c(BM.red, BM.blue, BM.pink)
-)
+#This should be identical to ggsurvplot. Only shown as an example
+km.fig <- ggsurvplot2(fit = surv.km, censor = FALSE, risk.table = TRUE, risk.table.height = 0.2, risk.table.y.text.col = FALSE,
+                      title = 'Breast Cancer Prognosis', xlim = c(0, 7.5),
+                      legend.title = 'Prognosis', legend.labs =  c('KM Good', 'KM Medium', 'KM Poor'),
+                      palette = c(BM.red, BM.blue, BM.Dblue) #use this to control colour of lines
+                      )
 
 # Fit parametric survival models -------------------------------------------
-#fit a Weibull model and get the fitted survival curve
-#in a format suitable for plotting with ggplot
-surv.wb <- flexsurvreg(surv.obj, data = bc, dist = 'weibull')
-surv.wb.summ <- summary(surv.wb, type = 'survival', tidy = TRUE)
-surv.wb.summ$prognosis <- paste(surv.wb.summ$group, 'Weibull')
+#fit 6 standard distributions
+#this fits the distributions and collects the model fit objects in a list
+psm.list <- list(
+  exp = flexsurvreg(Surv(recyrs, censrec) ~ group, data = bc, dist = 'exp'),
+  weibull = flexsurvreg(Surv(recyrs, censrec) ~ group, data = bc, dist = 'weibull'),
+  gompertz = flexsurvreg(Surv(recyrs, censrec) ~ group, data = bc, dist = 'gompertz'),
+  llog = flexsurvreg(Surv(recyrs, censrec) ~ group, data = bc, dist = 'llogis'),
+  lnorm = flexsurvreg(Surv(recyrs, censrec) ~ group, data = bc, dist = 'lnorm'),
+  gengamma = flexsurvreg(Surv(recyrs, censrec) ~ group, data = bc, dist = 'gengamma')
+)
 
-#fit an exponential model and get the fitted survival curve
-#in a format suitable for plotting with ggplot
-surv.exp <- flexsurvreg(surv.obj, data = bc, dist = 'exp')
-surv.exp.summ <- summary(surv.exp, type = 'survival', tidy = TRUE)
-surv.exp.summ$prognosis <- paste(surv.exp.summ$group, 'Exponential')
+#get the fitted survival curve for each distribution and store the results in a list
+#this is equivalent to 'summary(model.fit.obj, type = 'survival', tidy = TRUE)' for each distribution
+#Each element of the list a data frame with the results of the corresponding model
+psm.summ <- lapply(psm.list, summary, type = 'survival', tidy = TRUE)
+
+#Edit the group column to label all the permutations of group and model
+for(i in 1:length(psm.summ)){
+  psm.summ[[i]]$group <- paste0(names(psm.summ)[i], ' ', psm.summ[[i]]$group)
+}
 
 # Overlay parametric curves on Kaplan-Meier -------------------------------
-#put all the parametric survival results in a list
-#Each element of the list a data frame with the results of the corresponding model
-psm = list('Weibull' = surv.wb.summ, 'Exponential' = surv.exp.summ)
-
 #plot the results
 #The base layer of the plot is the Kaplan Meier curve. The parametric curves are
-#added as extra layers on top. This should work of any number of additional curves
-#Pay attention to the l.type, cols and labs.legend arguments. These need to be specified in
-#the order that you expect them to appear in the figure legend
-surv.fig <- ggsurvplot2(km = surv.km, psm.curves = psm, xval = 'time', yval = 'est',
-                        groups = 'prognosis', plot.title = 'Breast Cancer Prognosis', x.limit = c(0, 7.5),
-                        l.type = rep(c(2, 1, 3), length(psm)+1), title.legend = 'Prognosis',
-                        labs.legend =  c('Good KM', 'Medium KM', 'Poor KM'),
-                        cols = c(rep(BM.red, length(psm)+1), rep(BM.blue, length(psm)+1), rep(BM.Dblue, length(psm)+1))
+#added as extra layers on top.
+#The following arguments are specific to ggsurvplot2: psm.curves, xval, yval, groups
+#All other arguments are passed directly to ggsurvplot
+surv.fig <- ggsurvplot2(fit = surv.km, psm.curves = psm.summ, data = bc, xval = 'time', yval = 'est', groups = 'group',
+                        censor = FALSE, risk.table = TRUE, risk.table.height = 0.2, risk.table.y.text.col = FALSE,
+                        title = 'Breast Cancer Prognosis', xlim = c(0, 7.5),
+                        legend.title = 'Prognosis', legend.labs =  c('KM Good', 'KM Medium', 'KM Poor'),
+                        palette = rep(c(BM.red, BM.blue, BM.Dblue), length(psm.summ)+1) #use this to control colour of lines
                        )
 surv.fig
 
+# Example with a single group ---------------------------------------------
+#basic KM
+single.km <- survfit(Surv(recyrs, censrec) ~ 1, data = bc)
 
-# Cumulative Hazard plots -------------------------------------------------
-# Example cumulative hazard plot ------------------------------------------
-#Get cumulative hazards for the weibull model
-chaz.wb.summ <- summary(surv.wb, type = 'cumhaz')
+#Plot basic Kaplan-Meier curves without any parametric curves
+#This should be identical to ggsurvplot. Only shown as an example
+km.fig <- ggsurvplot2(fit = single.km, censor = FALSE, risk.table = TRUE, risk.table.height = 0.2, risk.table.y.text.col = FALSE,
+                      title = 'Breast Cancer Prognosis', xlim = c(0, 7.5), conf.int = FALSE,
+                      legend.title = '', legend.labs =  'All', palette = 'black'
+)
 
-#rearrange the Weibull results into a format suitable for ggplot
-names(chaz.wb.summ) <- gsub('group=', '', names(chaz.wb.summ))
-n.temp <- names(chaz.wb.summ)
-wb.chaz <- lapply(names(chaz.wb.summ), function(name) {
-  chaz.wb.summ[[name]]$prognosis <- paste(name, 'Weibull')
-  chaz.wb.summ[[name]]
-})
-names(wb.chaz) <- n.temp
-wb.chaz <- bind_rows(wb.chaz)
+km.fig
 
-#Get cumulative hazards for the weibull model
-chaz.exp.summ <- summary(surv.exp, type = 'cumhaz')
+# Fit parametric survival models -------------------------------------------
+#fit 6 standard distributions
+#this fits the distributions and collects the model fit objects in a list
+psm.list.single <- list(
+  exp = flexsurvreg(Surv(recyrs, censrec) ~ 1, data = bc, dist = 'exp'),
+  weibull = flexsurvreg(Surv(recyrs, censrec) ~ 1, data = bc, dist = 'weibull'),
+  gompertz = flexsurvreg(Surv(recyrs, censrec) ~ 1, data = bc, dist = 'gompertz'),
+  llog = flexsurvreg(Surv(recyrs, censrec) ~ 1, data = bc, dist = 'llogis'),
+  lnorm = flexsurvreg(Surv(recyrs, censrec) ~ 1, data = bc, dist = 'lnorm'),
+  gengamma = flexsurvreg(Surv(recyrs, censrec) ~ 1, data = bc, dist = 'gengamma')
+)
 
-#rearrange the exponential results into a format suitable for ggplot
-names(chaz.exp.summ) <- gsub('group=', '', names(chaz.exp.summ))
-n.temp <- names(chaz.exp.summ)
-exp.chaz <- lapply(names(chaz.exp.summ), function(name) {
-  chaz.exp.summ[[name]]$prognosis <- paste(name, 'Exponential')
-  chaz.exp.summ[[name]]
-})
-names(exp.chaz) <- n.temp
-exp.chaz <- bind_rows(exp.chaz)
+#get the fitted survival curve for each distribution and store the results in a list
+#this is equivalent to 'summary(model.fit.obj, type = 'survival', tidy = TRUE)' for each distribution
+#Each element of the list a data frame with the results of the corresponding model
+psm.summ.single <- lapply(psm.list.single, summary, type = 'survival', tidy = TRUE)
 
-psm.chaz <- list('Weibull' = wb.chaz, 'Exponential' = exp.chaz)
+#Add a dummy group column
+for(i in 1:length(psm.summ.single)){
+  psm.summ.single[[i]]$group <- names(psm.summ.single)[i]
+}
 
-#calculate minimum time for x-axis
-chaz.fig <- ggsurvplot2(surv.km, psm.curves = psm.chaz, fun = 'cumhaz', xval = 'time', yval = 'est', groups = 'prognosis',
-                        plot.title = 'Cumulative Hazard', time.scale = 'log', time.interval = 1, show.table = TRUE, table.height = 0.2,
-                        table.title = 'Number at risk', title.legend = 'Prognosis', labs.legend =  c('Good KM', 'Medium KM', 'Poor KM'),
-                        l.type = rep(c(2, 1, 3), length(psm.chaz)+1), x.limit = c(0.1, 7.5), x.label = 'Log Time (Years)',
-                        cols = c(rep(BM.red, length(psm.chaz)+1), rep(BM.blue, length(psm.chaz)+1), rep(BM.Dblue, length(psm.chaz)+1)))
-chaz.fig
+# Overlay parametric curves on Kaplan-Meier -------------------------------
+#plot the results
+#The base layer of the plot is the Kaplan Meier curve. The parametric curves are
+#added as extra layers on top.
+#The following arguments are specific to ggsurvplot2: psm.curves, xval, yval, groups
+#All other arguments are passed directly to ggsurvplot
+single.fig <- ggsurvplot2(fit = single.km, psm.curves = psm.summ.single, data = bc, xval = 'time', yval = 'est', groups = 'group',
+                          break.time.by = 1, censor = FALSE, conf.int = FALSE, risk.table = TRUE, risk.table.height = 0.2,
+                          risk.table.y.text.col = FALSE, title = 'Breast Cancer Prognosis', xlim = c(0, 8),
+                          legend.title = 'Prognosis', legend.labs =  c('KM'),
+                          palette = c(BM.red, BM.blue, BM.Dblue, 'black', BM.Dyellow, BM.pink, BM.yellow) #use this to control colour of lines
+)
+single.fig
+
 }
 \seealso{
 \code{\link[survminer]{ggsurvplot}}

@@ -7,6 +7,7 @@
 #'   \describe{
 #'     \item{Time}{The time of the events}
 #'     \item{Survival}{The probability of survival at each event time}
+#'     \item{stderr}{The standard error of the survival estimate}
 #'     \item{lower}{The lower limit of the confidence interval for the survival curve}
 #'     \item{upper}{The upper limit of the confidence interval for the survival curve}
 #'     \item{Nrisk}{The number of patients at risk at each event time}
@@ -51,12 +52,14 @@ getKMcurve <- function(km, time.col, event.col, group.col, data){
   #extract survival estimates immediately  after event occurs (bottom right corner of km). Data also contains survival at time 0
   KMdataA <- data.frame("Time" = c(0, min(data[data[event.col] == 1, time.col],na.rm = TRUE), KMSum$time, max(data[,time.col], na.rm = TRUE)),
                         "Survival" = c(1, 1, KMSum$surv, min(KMSum$surv)),
+                        "stderr" = c(1, 1, KMSum$std.err, min(KMSum$std.err)),
                         "lower" = c(1, 1, KMSum$lower, min(KMSum$lower)),
                         "upper" = c(1, 1, KMSum$upper, min(KMSum$upper))
   )
   #extract survival estimates immediately before event occurs (top right corner of KM)
   KMdataB <- data.frame("Time" = KMSum$time[-1],
                         "Survival" = KMSum$surv[-length(KMSum$surv)],
+                        "stderr" = KMSum$std.err[-length(KMSum$std.err)],
                         "lower" = KMSum$lower[-length(KMSum$lower)],
                         "upper" = KMSum$upper[-length(KMSum$upper)])
   #combine datasets
