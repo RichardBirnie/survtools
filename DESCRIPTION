@@ -16,3 +16,4 @@ Imports:
     survminer (>= 0.2.4),
     survival (>= 2.40-1)
 RoxygenNote: 6.0.1
+

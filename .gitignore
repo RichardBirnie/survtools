@@ -4,3 +4,5 @@
 .Ruserdata
 .Rbuildignore
 survtools.Rproj
+R/experiment.R
+inst/doc
