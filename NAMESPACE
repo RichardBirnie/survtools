@@ -2,3 +2,4 @@
 
 export(getKMcurve)
 export(ggsurvplot2)
+export(survivalLandmarkSummary)
