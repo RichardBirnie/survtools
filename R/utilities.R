@@ -31,26 +31,26 @@ getKMcurve <- function(km, time.col, event.col, group.col, data){
     #Tidy up the strata names. Remove everything before the equals
     KMSum$strata <- gsub('^.*=', '', KMSum$strata, perl = TRUE)
     #convert the necessary parts of KM summary into a data frame
-    # KMSum <- dplyr::bind_cols(KMSum[c(2:4, 6, 8)])
-    KMSum <- dplyr::bind_cols(KMSum[c(2:4, 6, 8:9, 11:10)])
+    KMSum <- dplyr::bind_cols(KMSum[c('time', 'surv', 'std.err', 'lower', 'upper', 'n.risk', 'n.event', 'strata')])
 
     km.curve <- lapply(unique(KMSum$strata), function(group){
       km.group <- dplyr::filter(KMSum, strata == group)
-      fil <- lazyeval::interp(~y == x, .values=list(y = as.name(group.col), x = group))
-      data.group <- dplyr::filter_(data, fil)
-      km.curve.g <- .extractKM(KMSum = km.group, time.col = time.col, event.col = event.col, data = data.group)
+      data.group <- plyr::dlply(data, .variables = group.col, .fun = function(x)return(x))
+
+      km.curve.g <- .extractKM(KMSum = km.group, time.col = time.col, event.col = event.col, data.group = data.group[[group]])
       km.curve.g$group <- group
       km.curve.g
     })
+
     km.curve <- dplyr::bind_rows(km.curve)
   }
 
 }
 
 #' Internal helper function to extract Kaplan-Meier data from a single group of patients
-.extractKM <- function(KMSum, time.col, event.col, data){
+.extractKM <- function(KMSum, time.col, event.col, data.group){
   #extract survival estimates immediately  after event occurs (bottom right corner of km). Data also contains survival at time 0
-  KMdataA <- data.frame("Time" = c(0, min(data[data[event.col] == 1, time.col],na.rm = TRUE), KMSum$time, max(data[,time.col], na.rm = TRUE)),
+  KMdataA <- data.frame("Time" = c(0, min(data.group[data.group[event.col] == 1, time.col],na.rm = TRUE), KMSum$time, max(data.group[,time.col], na.rm = TRUE)),
                         "Survival" = c(1, 1, KMSum$surv, min(KMSum$surv)),
                         "stderr" = c(1, 1, KMSum$std.err, min(KMSum$std.err)),
                         "lower" = c(1, 1, KMSum$lower, min(KMSum$lower)),
@@ -74,9 +74,9 @@ getKMcurve <- function(km, time.col, event.col, group.col, data){
   KMdataAB2 <- KMdataAB[order(KMdataAB$Time, -KMdataAB$Survival), ]
 
   #calculate number of right censored patients
-  NRcens <-  dim(data[(data[,time.col] == max(data[,time.col], na.rm = TRUE) & data[,event.col] == 0), ])[1]
+  NRcens <-  dim(data.group[(data.group[,time.col] == max(data.group[,time.col], na.rm = TRUE) & data.group[,event.col] == 0), ])[1]
   #calculate and order number of patients at risk
-  Nrisk <- sort(c(length(data[,time.col]), KMSum$n.risk, KMSum$n.risk - KMSum$n.event, NRcens), decreasing = TRUE)
+  Nrisk <- sort(c(length(data.group[,time.col]), KMSum$n.risk, KMSum$n.risk - KMSum$n.event, NRcens), decreasing = TRUE)
   KMdata <- cbind(KMdataAB2, Nrisk)
 }
 
